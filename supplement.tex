@@ -1,0 +1,367 @@
+\documentclass[twoside]{article}
+\usepackage[preprint]{aistats2027}
+\usepackage[round,authoryear]{natbib}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{url}
+\renewcommand{\bibname}{References}
+\renewcommand{\bibsection}{\subsubsection*{\bibname}}
+\bibliographystyle{apalike}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newcommand{\Y}{\mathcal Y}
+\newcommand{\simplex}{\Delta}
+\newcommand{\CCdim}{\operatorname{CCdim}}
+\newcommand{\affdim}{\operatorname{affdim}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\1}{\mathbf 1}
+\begin{document}
+\runningauthor{}
+\twocolumn[
+\aistatstitle{Supplement: Dice Is Quadratic, Jaccard Is Exponential}
+\aistatsauthor{Pahan Dewasurendra}
+\aistatsaddress{Johns Hopkins University}
+]
+
+\section{Strict Positive Definiteness}
+
+We give a complete feature proof for the Jaccard matrix. Let $\Y_+=2^{[s]}\setminus\{\varnothing\}$. For a permutation $\pi$ of $[s]$ and $i\in[s]$, define
+\begin{equation}
+f_{\pi,i}(A)=\mathbf1\{i\in A\}\mathbf1\{A\cap P_{\pi,i}=\varnothing\},
+\label{eq:supp-feature}
+\end{equation}
+where $P_{\pi,i}$ is the set of elements appearing before $i$ in $\pi$. Thus $f_{\pi,i}(A)=1$ exactly when $i$ is the first element of $A$ under $\pi$.
+
+\begin{lemma}
+For nonempty $A,B\subseteq[s]$,
+\begin{equation}
+\frac{|A\cap B|}{|A\cup B|}
+=\frac1{s!}\sum_\pi\sum_{i=1}^s f_{\pi,i}(A)f_{\pi,i}(B).
+\label{eq:supp-minhash}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For a fixed permutation, the inner sum is one if the first element of $A\cup B$ lies in $A\cap B$ and zero otherwise. Under a uniform permutation, every element of $A\cup B$ is equally likely to appear first. The probability is therefore $|A\cap B|/|A\cup B|$.
+\end{proof}
+
+Equation \eqref{eq:supp-minhash} makes the nonempty Jaccard matrix $K$ positive semidefinite. For strictness, suppose $c^\top Kc=0$. Expanding the average of squares gives
+\begin{equation}
+\sum_{A\in\Y_+}c_Af_{\pi,i}(A)=0
+\label{eq:supp-square-zero}
+\end{equation}
+for every $\pi,i$. Fix $i$ and a subset $P\subseteq[s]\setminus\{i\}$. There is a permutation whose elements before $i$ are exactly $P$. For that permutation, \eqref{eq:supp-square-zero} says
+\begin{equation}
+\sum_{S\subseteq([s]\setminus\{i\})\setminus P}c_{S\cup\{i\}}=0.
+\label{eq:supp-downsets}
+\end{equation}
+Put $U_i=[s]\setminus\{i\}$ and $d_S=c_{S\cup\{i\}}$. As $P$ ranges over subsets of $U_i$, its complement $Q=U_i\setminus P$ also ranges over all subsets. Hence \eqref{eq:supp-downsets} gives
+\begin{equation}
+\sum_{S\subseteq Q}d_S=0
+\qquad\text{for every }Q\subseteq U_i.
+\end{equation}
+Boolean-lattice M\"obius inversion yields
+\begin{equation}
+d_Q=\sum_{S\subseteq Q}(-1)^{|Q\setminus S|}
+\sum_{R\subseteq S}d_R=0.
+\end{equation}
+Thus $c_A=0$ for every nonempty $A$ containing $i$. Every nonempty set contains some $i$, so $c=0$ and $K\succ0$. Under $J(\varnothing,\varnothing)=1$, the full score matrix is $1\oplus K$ and is also strictly positive definite.
+
+This proof uses the minwise representation introduced for document resemblance by \citet{broder1997resemblance}. \citet{bouchard2013proof} proved the same strict-definiteness conclusion for the complete nonempty Jaccard matrix by decomposing it into an infinite sum of positive-semidefinite matrices. The M\"obius argument above is included to make the exact rank input self-contained.
+
+\section{Score Rank, Loss Rank, and Affine Dimension}
+
+Let $N=2^s$ and order the empty set first. Under the unit empty-set convention,
+\begin{equation}
+J=
+\begin{bmatrix}
+1&0\\
+0&K
+\end{bmatrix},
+\qquad K\succ0.
+\label{eq:supp-block-score}
+\end{equation}
+This gives $\rank(J)=N$. Since $L=\1\1^\top-J$, the matrix determinant lemma gives
+\begin{align}
+\det(L)
+&=\det(-J)\det\left(1+\1^\top(-J)^{-1}\1\right)\\
+&=\det(-J)\left(1-\1^\top J^{-1}\1\right).
+\label{eq:supp-det}
+\end{align}
+The block form gives
+\begin{equation}
+\1^\top J^{-1}\1=1+\1^\top K^{-1}\1>1,
+\end{equation}
+where strict positivity follows from $K^{-1}\succ0$. Thus \eqref{eq:supp-det} is nonzero and $\rank(L)=N$.
+
+If vectors $v_1,\ldots,v_N$ are linearly independent, then they are affinely independent. Indeed,
+\begin{equation}
+\sum_{j=2}^N a_j(v_j-v_1)=0
+\end{equation}
+is a linear relation with coefficient $a_j$ on $v_j$ and coefficient $-\sum_{j=2}^Na_j$ on $v_1$. Linear independence forces every $a_j=0$. Applying this to the columns of $L$ gives affine dimension $N-1$.
+
+We will also need the following direct consequence. If $\mathcal A$ is any set of $r$ reports, then its score columns are linearly independent. Fixing $B_0\in\mathcal A$, the $r-1$ vectors
+\begin{equation}
+J_{\cdot,B}-J_{\cdot,B_0},
+\qquad B\in\mathcal A\setminus\{B_0\},
+\label{eq:supp-active-differences}
+\end{equation}
+are linearly independent. Negating them gives the corresponding loss differences.
+
+\section{The Factorial Identity}
+
+Fix a distinguished label $1$ and put $U=[s]\setminus\{1\}$, so $|U|=n=s-1$. Define the unnormalized mass
+\begin{equation}
+w(S)=\frac1{|S|!},
+\qquad S\subseteq U,
+\label{eq:supp-weight}
+\end{equation}
+at outcome $\{1\}\cup S$. Let $T\subseteq U$. The unnormalized expected Jaccard score of report $\{1\}\cup T$ is
+\begin{equation}
+G(T)=\sum_{S\subseteq U}
+\frac{1+|S\cap T|}{1+|S\cup T|}\frac1{|S|!}.
+\label{eq:supp-G}
+\end{equation}
+
+\begin{lemma}
+The quantity $G(T)$ is independent of $T$.
+\end{lemma}
+
+\begin{proof}
+It suffices to prove $G(T\cup\{x\})=G(T)$ whenever $x\in U\setminus T$. Pair each $A\subseteq U\setminus\{x\}$ with the two outcomes $S=A$ and $S=A\cup\{x\}$. Write
+\begin{equation}
+a=|A\cap T|,
+\qquad b=|A\setminus T|,
+\qquad t=|T|.
+\end{equation}
+Then $|A|=a+b$ and $|A\cup T|=t+b$. The paired contribution to $G(T\cup\{x\})-G(T)$ is
+\begin{align}
+D_{a,b}
+={}&-\frac{1+a}{(1+t+b)(2+t+b)(a+b)!}\\
+&+\frac1{(2+t+b)(a+b+1)!}.
+\label{eq:supp-pair-difference}
+\end{align}
+There are $\binom{t}{a}\binom{n-t-1}{b}$ sets $A$ with these values. For fixed $b$, the factor $\binom{n-t-1}{b}/(2+t+b)$ is common. It remains to show
+\begin{equation}
+\sum_{a=0}^t\binom ta
+\left\{
+\frac1{(a+b+1)!}
+-\frac{a+1}{(t+b+1)(a+b)!}
+\right\}=0.
+\label{eq:supp-key-sum}
+\end{equation}
+Multiplying by $t+b+1$ and using
+\begin{equation}
+\frac{t+b+1}{(a+b+1)!}
+=\frac1{(a+b)!}+\frac{t-a}{(a+b+1)!}
+\end{equation}
+reduces \eqref{eq:supp-key-sum} to
+\begin{equation}
+\sum_{a=0}^t\binom ta\frac{a}{(a+b)!}
+=
+\sum_{a=0}^t\binom ta\frac{t-a}{(a+b+1)!}.
+\label{eq:supp-shift}
+\end{equation}
+The identities
+\begin{equation}
+a\binom ta=t\binom{t-1}{a-1},
+\qquad
+(t-a)\binom ta=t\binom{t-1}{a}
+\end{equation}
+make the two sides of \eqref{eq:supp-shift} identical after replacing $a$ by $a-1$ on the left. Summing over $b$ proves the claim.
+\end{proof}
+
+Normalizing \eqref{eq:supp-weight} gives the law in the main paper. The common active score has the explicit form
+\begin{equation}
+c_s=
+\frac{\displaystyle\sum_{r=0}^{s-1}\binom{s-1}{r}(r+1)!^{-1}}
+{\displaystyle\sum_{r=0}^{s-1}\binom{s-1}{r}r!^{-1}}.
+\label{eq:supp-common-score}
+\end{equation}
+For a report $T\subseteq U$ that omits label $1$, compare it with the active report $\{1\}\cup T$. At outcome $\{1\}\cup S$ their score difference is exactly
+\begin{equation}
+\frac{1+|S\cap T|}{1+|S\cup T|}
+-\frac{|S\cap T|}{1+|S\cup T|}
+=\frac1{1+|S\cup T|}.
+\label{eq:supp-point-gap}
+\end{equation}
+This lies in $[1/s,1]$. It equals $1/s$ for every $S$ when $T=U$. Hence all active reports tie, all inactive reports are strictly worse, and the minimum expected gap is exactly $1/s$.
+
+The total probability assigned to outcomes with $|S|=r$ is
+\begin{equation}
+\frac{\binom{s-1}{r}/r!}{\sum_{j=0}^{s-1}\binom{s-1}{j}/j!}.
+\end{equation}
+This layer formula explains the integer patterns in the verification output. After multiplying by $(s-1)!$, the unnormalized layer weights are $\binom{s-1}{r}(s-1)!/r!$.
+
+Now let $\mathcal A=\{B:1\in B\}$ and $\mathcal C=\{\varnothing\}\cup\mathcal A$. Denote the factorial law by $p^0$ and its common active score by $c_s$. Define
+\begin{equation}
+\bar p^0(\varnothing)=\frac{c_s}{1+c_s},
+\qquad
+\bar p^0(A)=\frac{p^0(A)}{1+c_s}\quad(A\in\mathcal A).
+\label{eq:supp-augmented-law}
+\end{equation}
+The empty report has expected score $c_s/(1+c_s)$. Every report in $\mathcal A$ has the same expected score because its score against the empty outcome is zero. A nonempty report outside $\mathcal A$ has its original expected score divided by $1+c_s$, so it is worse by at least
+\begin{equation}
+\frac1{s(1+c_s)}.
+\label{eq:supp-augmented-gap}
+\end{equation}
+Consequently, the exact Bayes family under $\bar p^0$ is $\mathcal C$, which has size $2^{s-1}+1$.
+
+\section{Moving the Witness into the Interior}
+
+Let $\mathcal D=\Y\setminus\mathcal C$ and write $r=|\mathcal A|=N/2$, so $|\mathcal C|=r+1$. If $s=1$, then $\mathcal C=\Y$ and the law \eqref{eq:supp-augmented-law} already has full support. Suppose henceforth that $s\geq2$. Partition the score columns indexed by $\mathcal C$ into
+\begin{align}
+K&=J_{\mathcal C,\mathcal C}\in\mathbb R^{(r+1)\times(r+1)},\\
+H&=J_{\mathcal D,\mathcal C}\in\mathbb R^{(N-r-1)\times(r+1)}.
+\end{align}
+The principal matrix $K$ is strictly positive definite. The preceding section gives
+\begin{equation}
+K^\top \bar p^0_{\mathcal C}=\bar c_0\1,
+\qquad
+\1^\top \bar p^0_{\mathcal C}=1,
+\label{eq:supp-base-system}
+\end{equation}
+Because $K$ is invertible, \eqref{eq:supp-base-system} has the unique solution
+\begin{equation}
+\bar p^0_{\mathcal C}=\bar c_0K^{-\top}\1,
+\qquad
+\bar c_0=(\1^\top K^{-\top}\1)^{-1}.
+\label{eq:supp-base-unique}
+\end{equation}
+
+Choose an arbitrary $q\in\operatorname{relint}(\simplex_{\mathcal D})$. For $\epsilon>0$, set
+\begin{equation}
+p_{\mathcal D}^\epsilon=\epsilon q.
+\end{equation}
+Define
+\begin{align}
+u&=K^{-\top}\1,
+&v&=K^{-\top}H^\top q,\\
+c_\epsilon&=\frac{1-\epsilon+\epsilon\1^\top v}{\1^\top u},
+&p_{\mathcal C}^\epsilon&=c_\epsilon u-\epsilon v.
+\label{eq:supp-perturbation}
+\end{align}
+Then $\1^\top p_{\mathcal C}^\epsilon=1-\epsilon$ and
+\begin{equation}
+K^\top p_{\mathcal C}^\epsilon+H^\top p_{\mathcal D}^\epsilon
+=c_\epsilon\1.
+\label{eq:supp-preserve-ties}
+\end{equation}
+At $\epsilon=0$, \eqref{eq:supp-perturbation} equals the coordinatewise positive vector $\bar p^0_{\mathcal C}$. For all sufficiently small positive $\epsilon$, every active coordinate remains positive, while every coordinate in $\mathcal D$ is positive by construction. Thus $p^\epsilon\in\operatorname{relint}(\simplex_N)$.
+
+Equation \eqref{eq:supp-preserve-ties} makes all reports in $\mathcal C$ tie exactly. At $\epsilon=0$, every inactive report is below them by at least \eqref{eq:supp-augmented-gap}. Expected score is linear and there are finitely many reports, so for all sufficiently small $\epsilon$ every inactive gap remains positive. Therefore the Bayes set under $p^\epsilon$ is exactly $\mathcal C$.
+
+\section{Feasible-Subspace Calculation}
+
+Fix $B_0\in\mathcal C$ and define loss differences
+\begin{equation}
+d_B=L_{\cdot,B}-L_{\cdot,B_0}.
+\end{equation}
+The trigger set for $B_0$ is
+\begin{equation}
+Q_{B_0}=\{z\in\simplex_N:z^\top d_B\geq0\text{ for every }B\in\Y\}.
+\label{eq:supp-trigger}
+\end{equation}
+At the full-support witness $p=p^\epsilon$, equality holds exactly for $B\in\mathcal C$. Strict positive definiteness gives
+\begin{equation}
+E=\operatorname{span}\{d_B:B\in\mathcal C\}
+\quad\text{with}\quad
+\dim E=r.
+\label{eq:supp-E}
+\end{equation}
+
+A vector $v\in\mathbb R^N$ is a two-sided feasible direction at $p$ exactly when
+\begin{equation}
+\1^\top v=0,
+\qquad
+v\perp E.
+\label{eq:supp-feasible}
+\end{equation}
+Necessity follows because $p\pm\eta v$ must stay normalized and must satisfy every active inequality in both signs. For sufficiency, full support keeps every coordinate nonnegative for sufficiently small $\eta$, the conditions in \eqref{eq:supp-feasible} preserve every active comparison, and finitely many strict inactive comparisons remain strict.
+
+The normalization vector $\1$ does not belong to $E$. Indeed, every $d_B\in E$ is orthogonal to $p$ because its two reports tie under $p$. Hence every vector in $E$ is orthogonal to $p$, while $p^\top\1=1$. The constraints in \eqref{eq:supp-feasible} therefore have rank
+\begin{equation}
+1+\dim E=r+1.
+\end{equation}
+It follows that
+\begin{equation}
+\mu_{Q_{B_0}}(p)=N-r-1.
+\label{eq:supp-mu}
+\end{equation}
+Since $p$ has full support, Theorem 16 of \citet{ramaswamy2016convex} and \eqref{eq:supp-mu} give
+\begin{equation}
+\CCdim(L)
+\geq N-(N-r-1)-1
+=r
+=2^{s-1}.
+\end{equation}
+The affine-dimension upper bound from their Theorem 12 and Section S2 gives $\CCdim(L)\leq N-1$.
+
+\section{The Alternative Empty-Set Convention}
+
+Some software sets $J(\varnothing,\varnothing)=0$. Let $J^{(0)}$ denote that score matrix and $L^{(0)}=\1\1^\top-J^{(0)}$. The nonempty principal block $J_+$ remains strictly positive definite, so
+\begin{equation}
+J^{(0)}=0\oplus J_+,
+\qquad
+\rank(J^{(0)})=N-1.
+\end{equation}
+The loss matrix remains nonsingular. If $L^{(0)}x=0$, its empty-outcome row gives $\1^\top x=0$. Every nonempty-outcome row then gives $J_+x_+=0$, where $x_+$ contains the nonempty-report coordinates. Thus $x_+=0$, and normalization gives the empty coordinate zero. Hence $\rank(L^{(0)})=N$ and its affine dimension is $N-1$.
+
+The empty report cannot join the augmented Bayes family because it always has score zero under this convention. The original factorial witness still has exact Bayes family $\mathcal A$, and its gap over every report outside $\mathcal A$ is at least $1/s$. The interior perturbation through the unchanged invertible block $J^{(0)}_{\mathcal A,\mathcal A}$ therefore gives a full-support law with exactly these $r$ active reports. Repeating the feasible-subspace calculation with $r-1$ independent active differences gives
+\begin{equation}
+2^{s-1}-1\leq\CCdim(L^{(0)})\leq2^s-1.
+\end{equation}
+Thus the standard convention improves the proved lower bound by one. The exponential order and the asymptotic separation from Dice/F1 are unchanged.
+
+\section{The Brier Upper Surrogate}
+
+Let $p\in\simplex_N$ be the conditional outcome law and let $q\in\simplex_N$ be the surrogate report. For outcome $A$, define
+\begin{equation}
+\psi_A(q)=\|q-e_A\|_2^2.
+\end{equation}
+Its conditional risk is
+\begin{align}
+\sum_Ap_A\psi_A(q)
+&=\|q\|_2^2-2p^\top q+1\\
+&=\|q-p\|_2^2+1-\|p\|_2^2.
+\label{eq:supp-brier-risk}
+\end{align}
+The unique minimizer is $q=p$, and surrogate regret is $\|q-p\|_2^2$.
+
+Decode $q$ to any
+\begin{equation}
+\widehat B\in\arg\min_Bq^\top L_{\cdot,B}.
+\end{equation}
+If $B^*$ minimizes target risk under $p$, then
+\begin{align}
+p^\top L_{\cdot,\widehat B}-p^\top L_{\cdot,B^*}
+={}&(p-q)^\top(L_{\cdot,\widehat B}-L_{\cdot,B^*})\\
+&+q^\top(L_{\cdot,\widehat B}-L_{\cdot,B^*})\\
+\leq{}&(p-q)^\top(L_{\cdot,\widehat B}-L_{\cdot,B^*})\\
+\leq{}&\sqrt N\|p-q\|_2.
+\label{eq:supp-transfer}
+\end{align}
+The final inequality uses that every loss difference coordinate lies in $[-1,1]$. Combining \eqref{eq:supp-brier-risk} and \eqref{eq:supp-transfer} gives the stated $2^{s/2}$ regret transfer. For fixed $p$, finiteness of the report set makes the smallest positive regret $\gamma_p$ of any suboptimal report strictly positive. Thus every $q$ linked to a suboptimal report has surrogate regret at least $\gamma_p^2/N$, which is exactly the required strict calibration gap. If every report is optimal, the claim is vacuous. The simplex has affine dimension $N-1$, so this is an $(N-1)$-dimensional convex calibrated surrogate.
+
+\section{Deterministic Verification}
+
+The supplied file \texttt{verify\_jaccard\_theorems.py} uses exact rational arithmetic for the factorial witness, SymPy for small exact ranks, and NumPy for interior perturbations and eigenvalues. It requires Python 3, NumPy, SciPy, and SymPy. From the paper directory, run
+\begin{verbatim}
+python verify_jaccard_theorems.py
+\end{verbatim}
+The script checks the following:
+\begin{enumerate}
+\item exact score rank, loss rank, affine-difference rank, augmented active-face rank, original factorial-face rank, and both ranks under the alternative empty-set convention for $1\leq s\leq5$.
+\item exact equality and gaps for the $2^{s-1}$-report factorial face and the $2^{s-1}+1$-report augmented face for $1\leq s\leq10$.
+\item positive full-support perturbations, augmented active tie error below $10^{-9}$, and strict inactive gaps for $1\leq s\leq8$.
+\item positive minimum eigenvalues of the Jaccard score matrix for $1\leq s\leq10$, including the $1024\times1024$ case.
+\item the Brier regret transfer on 500 fixed-seed random pairs of distributions for each $1\leq s\leq6$.
+\end{enumerate}
+The checks are not used as proofs. They independently exercise every finite-dimensional identity and matrix orientation used by the analytic argument.
+
+\bibliography{references}
+\end{document}
