@@ -10,7 +10,7 @@ Thus every distribution-free convex calibrated surrogate for example-based inter
 
 ## Keywords
 
-convex calibration dimension, Jaccard index, Dice coefficient, surrogate losses, multi-label prediction, set similarity
+dice, quadratic, jaccard, exponential, convex, calibration, similarities, monotone, transforms
 
 ## Files
 
